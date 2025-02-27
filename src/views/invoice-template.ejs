@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexumed Invoice</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .center_wanted{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .invoice {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 3px solid #00adb5;
+      border-radius: 10px;
+      background-color: #fff;
+    }
+    .nexumedTitle, .nexInfo, .detailInfo{
+      font-size: 16px;
+      color: #4b525a;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      text-align: left;
+    }
+    .nexInfo{
+      font-size: 12px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 38px;
+      color: #4b525a;
+      margin-top: -80px;
+      margin-bottom: 80px;
+    }
+    .invoiceOwner{
+      margin-top: -80px;
+      margin-bottom: 80px;
+    }
+    .logo{
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .details {
+      margin-bottom: 20px;
+    }
+    .detailInfo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #00adb5;
+      padding: 5px 0;
+    }
+    .hardCodedTitles, .varCodedTitles {
+      flex: 1;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: 3px;
+    }
+    .varCodedTitles {
+      justify-content: flex-end;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #4b525a;
+    }
+    .thankyouSub{
+      margin-top: -50px;
+      margin-bottom: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice">
+    <div class="header">
+      <div>
+        <div style="text-align: left;">
+          <img src="../images/nexumed.png" alt="Nexumed Logo" width="60" class="logo">
+        </div>
+        <p class="nexumedTitle">Nexumed</p>
+        <p class="nexInfo">123 main st</p>
+        <p class="nexInfo">Hasselt</p>
+        <p class="nexInfo">3500</p>
+        <p class="nexInfo">Business ##########</p>
+        <p class="nexInfo">VAT #######</p>
+    </div>
+    <div class="header">
+      <h1>Invoice</h1>
+      <p class="invoiceOwner">Dr Smith</p>
+      <p class="invoiceOwner"><%= userEmail %></p>
+    </div>
+    <div class="details">
+      <p class="detailInfo">
+        <strong class="hardCodedTitles">Invoice Nr:</strong> 
+        <span class="varCodedTitles"><%= paymentDetails.id %></span>
+      </p>
+      <p class="detailInfo">
+        <strong class="hardCodedTitles">Amount (incl. VAT):</strong> 
+        <span class="varCodedTitles">
+          <%= (paymentDetails.amount / 100).toFixed(2) %> 
+          <% if (paymentDetails.currency.toUpperCase() === 'EUR') { %>
+            &euro;
+          <% } else if (paymentDetails.currency.toUpperCase() === 'USD') { %>
+            &dollar;
+          <% } else { %>
+            <%= paymentDetails.currency.toUpperCase() %>
+          <% } %>
+        </span>
+      </p>
+      <p class="detailInfo">
+        <strong class="hardCodedTitles">VAT (21%):</strong> 
+        <span class="varCodedTitles">
+          <%= ((paymentDetails.amount / 100) * (21 / 121)).toFixed(2) %> 
+          <% if (paymentDetails.currency.toUpperCase() === 'EUR') { %>
+            &euro;
+          <% } else if (paymentDetails.currency.toUpperCase() === 'USD') { %>
+            &dollar;
+          <% } else { %>
+            <%= paymentDetails.currency.toUpperCase() %>
+          <% } %>
+        </span>
+      </p>
+      <!-- <p class="detailInfo">
+        <strong class="hardCodedTitles">Net Amount (excl. VAT):</strong> 
+        <span class="varCodedTitles">
+          <%= ((paymentDetails.amount / 100) / 1.21).toFixed(2) %> <%= paymentDetails.currency.toUpperCase() %>
+        </span>
+      </p> -->
+      <p class="detailInfo">
+        <strong class="hardCodedTitles">Date:</strong> 
+        <span class="varCodedTitles"><%= formattedDate %></span>
+      </p>
+    </div>
+    <!-- <span class="varCodedTitles"><%= deviceCount %></span>
+    <span class="varCodedTitles"><%= price %></span>
+    <span class="varCodedTitles"><%= packageName %></span> -->
+    <% if (packageName === 'Single') { %>
+      <p><span><%= packageName %></span> package with <span><%= deviceCount %></span> devices</p>
+    <% } else if (packageName === 'Multiple') { %>
+        <p><span><%= packageName %></span> package with <span><%= deviceCount %></span> Doctors</p>
+    <% } %>
+    <div class="footer">
+      <div>
+        <p class="nexumedTitle">Questions?</p>
+        <p class="nexInfo">Please contact our customer service dept at</p>
+        <p class="nexInfo">info@nexumed.eu</p>
+        <p class="nexInfo">or call our help desk</p>
+        <p class="nexInfo">0032 476 43 64 34</p>
+    </div>
+    <div class="footer thankyouSub">
+      <p>Thank you for your subscription!</p>
+    </div>
+  </div>
+</body>
+</html>
+
