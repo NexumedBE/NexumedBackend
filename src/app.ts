@@ -17,19 +17,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 const allowedOrigins = [
-  "http://localhost:3000", 
+  "http://localhost:3000",
   "https://nexumed-frontend.vercel.app"
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true); 
+      callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS")); 
+      callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,  
+  credentials: true,
 }));
 
 
