@@ -8,6 +8,8 @@ const router = express.Router();
 
 // Register a new user
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
+  console.log("🚀 Incoming registration request:", req.body);  // ✅ Debugging Line
+  
   const {
     username,
     email,
@@ -22,28 +24,25 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     firstName = "",
     lastName = "",
     jobTitle = "",
-    deviceCompany = "",
-    emrProvider = "",
-    admin, // ✅ Receive admin from request
-    current, 
+    admin,
+    current,
     doctors = [],
+    emrProviders = [],  // ✅ Correct field
     selectedDevices = [],
   } = req.body;
 
-  console.log("Incoming registration request:", req.body);
-
-  if (!username || !email || !password || !drsId || !practice) {
-    console.log("Validation failed: Missing required fields.");
-    res.status(400).json({
-      message: "Username, Email, Drs ID, Password, and Practice are required.",
-    });
-    return;
-  }
+  // 🚀 Log the parsed values before saving
+  console.log("🛠 Parsed registration data:");
+  console.log("   - Username:", username);
+  console.log("   - Email:", email);
+  console.log("   - Doctors:", doctors);
+  console.log("   - emrProviders:", emrProviders);
+  console.log("   - selectedDevices:", selectedDevices);
 
   try {
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { drsId }] });
     if (existingUser) {
-      console.log("User already exists:", existingUser);
+      console.log("❌ User already exists:", existingUser);
       res.status(400).json({
         message: "Username, Email, or Drs ID already exists.",
       });
@@ -51,7 +50,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     }
 
     const userCurrent = typeof current === "boolean" ? current : false;
-    const userAdmin = typeof admin === "boolean" ? admin : false; // ✅ Fix admin assignment
+    const userAdmin = typeof admin === "boolean" ? admin : true;
 
     const newUser = new User({
       username,
@@ -67,18 +66,17 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       firstName,
       lastName,
       jobTitle,
-      deviceCompany,
-      emrProvider,
-      admin: userAdmin, // ✅ Ensure admin is set properly
-      current: userCurrent, 
+      admin: userAdmin,
+      current: userCurrent,
       firstTime: true,
-      doctors,
-      selectedDevices,
+      doctors: Array.isArray(doctors) ? doctors : [], 
+      emrProviders: Array.isArray(emrProviders) ? emrProviders : [], 
+      selectedDevices: Array.isArray(selectedDevices) ? selectedDevices : [], 
     });
 
     await newUser.save();
 
-    console.log("User registered successfully:", newUser);
+    console.log("✅ User registered successfully:", newUser);
 
     res.status(201).json({
       message: "User registered successfully.",
@@ -96,24 +94,22 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         jobTitle: newUser.jobTitle,
-        deviceCompany: newUser.deviceCompany || "",
-        emrProvider: newUser.emrProvider || "",
         current: newUser.current,
-        admin: newUser.admin, // ✅ Ensure admin is included in response
-        firstTime: newUser.firstTime, 
+        admin: newUser.admin,
+        firstTime: newUser.firstTime,
         doctors: newUser.doctors || [],
+        emrProviders: newUser.emrProviders || [],  
         selectedDevices: newUser.selectedDevices || [],
       },
     });
   } catch (err) {
-    console.error("Error in registration route:", err);
+    console.error("❌ Error in registration route:", err);
     res.status(500).json({
       message: "Error registering user.",
       error: (err as Error).message,
     });
   }
 });
-
 
 
 
@@ -145,13 +141,13 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
           return res.status(404).json({ message: "User not found." });
         }
 
-        // Prepare user data response object
+        // Ensure we return structured EMR and device data
         const userResponse = {
           id: completeUser._id,
           username: completeUser.username,
           email: completeUser.email,
           drsId: completeUser.drsId,
-          practice: completeUser.practice, 
+          practice: completeUser.practice,
           address: completeUser.address || "",
           country: completeUser.country || "",
           firstName: completeUser.firstName || "",
@@ -159,16 +155,13 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
           lastName: completeUser.lastName || "",
           phone: completeUser.phone || "",
           town: completeUser.town || "",
-          deviceCompany: completeUser.deviceCompany || "",
-          emrProvider: completeUser.emrProvider || "",
           current: completeUser.current,
-          admin: completeUser.admin, // ✅ Ensure admin is included
+          admin: completeUser.admin,
           firstTime: completeUser.firstTime,
           doctors: completeUser.doctors || [],
+          emrProviders: completeUser.emrProviders || [],
           selectedDevices: completeUser.selectedDevices || [],
         };
-        
-        
 
         console.log("User logged in successfully:", userResponse);
 
@@ -183,6 +176,8 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
     });
   })(req, res, next);
 });
+
+
 
 // Logout logic
 router.post("/logout", (req, res) => {
@@ -222,7 +217,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // ✅ Fetch the user instead of using `findByIdAndUpdate`
     let updatedUser = await User.findById(id);
 
     if (!updatedUser) {
@@ -232,36 +226,76 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
 
     console.log("🔍 Original user before update:", updatedUser);
 
-    // ✅ Update fields dynamically
+    // ✅ Dynamically update user fields (excluding `doctors`, `selectedDevices`, and `emrProviders`)
     Object.keys(updatedFields).forEach((key) => {
-      (updatedUser as any)[key] = updatedFields[key];
+      if (key !== "doctors" && key !== "selectedDevices" && key !== "emrProviders") {
+        (updatedUser as any)[key] = updatedFields[key];
+      }
     });
 
-    // ✅ Ensure doctors are properly updated (Fix: Use `.set()` for Mongoose DocumentArray)
-    if (Array.isArray(updatedUser.doctors)) {
-      updatedUser.set("doctors", updatedUser.doctors.filter((doc) => doc.drsId)); // Ensure valid IDs
-      updatedUser.markModified("doctors"); // 🚀 Ensure changes are saved
+    // ✅ Ensure `emrProviders` is properly formatted as an array of objects
+    if (Array.isArray(updatedFields.emrProviders)) {
+      updatedUser.set(
+        "emrProviders",
+        updatedFields.emrProviders.map((provider: { 
+          name: string; 
+          incomingFormat: string; 
+          outgoingFormat: string; 
+          inputFolder: string; 
+          outputFolder: string; 
+        }) => ({
+          name: provider.name || "Unknown",
+          incomingFormat: provider.incomingFormat || "Unknown",
+          outgoingFormat: provider.outgoingFormat || "Unknown",
+          inputFolder: provider.inputFolder || "",
+          outputFolder: provider.outputFolder || "",
+        }))
+      );
+      updatedUser.markModified("emrProviders");
+    } else {
+      updatedUser.set("emrProviders", []);
     }
 
-    // ✅ Ensure `selectedDevices` is properly updated
-    if (Array.isArray(updatedUser.selectedDevices)) {
-      updatedUser.set("selectedDevices", updatedUser.selectedDevices);
-      updatedUser.markModified("selectedDevices"); // 🚀 Ensure changes are saved
+    // ✅ Ensure `selectedDevices` is properly formatted
+    if (Array.isArray(updatedFields.selectedDevices)) {
+      updatedUser.set(
+        "selectedDevices",
+        updatedFields.selectedDevices.map((device: { manufacturer: string; device: string; deviceId?: string; format?: string }) => ({
+          manufacturer: device.manufacturer,
+          device: device.device,
+          deviceId: device.deviceId || `${device.manufacturer}-${device.device}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+          format: device.format || "GDT",
+        }))
+      );
+      updatedUser.markModified("selectedDevices");
     }
 
-    await updatedUser.save(); // 🚀 Save updated user to the database
+    // ✅ Process doctors: Ensure valid entries and create new user profiles if needed
+    if (Array.isArray(updatedFields.doctors)) {
+      updatedUser.set(
+        "doctors",
+        updatedFields.doctors.filter((doc: { firstName: string; lastName: string; drsId: string; email: string }) => doc.drsId)
+      );
+      updatedUser.markModified("doctors");
+    }
 
+    await updatedUser.save();
     console.log("✅ Updated user saved:", updatedUser);
 
-    // ✅ Process doctor updates separately
+    // ✅ Process doctor updates separately (Creating new doctor profiles if they don't exist)
     await Promise.all(
-      updatedUser.doctors.map(async (doctor) => {
+      updatedFields.doctors.map(async (doctor: { 
+        firstName: string; 
+        lastName: string; 
+        drsId: string; 
+        email: string; 
+      }) => {
         if (!doctor.email || !doctor.drsId) {
           console.warn(`Skipping doctor ${doctor.lastName ?? "Unknown"}, missing email or drsId.`);
           return;
         }
 
-        // ✅ Select password explicitly
+        // ✅ Check if doctor already exists
         const existingDoctor = await User.findOne({ email: doctor.email }).select("+password");
 
         let updatedFieldsForDoctor: {
@@ -270,18 +304,19 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
           drsId: string;
           username: string;
           practice: string;
-          address: string;
           doctors: typeof updatedUser.doctors;
           selectedDevices: typeof updatedUser.selectedDevices;
-          emrProvider: string;
-          firstTime: boolean;
-          password?: string;
+          emrProviders: typeof updatedUser.emrProviders;
+          address: string;
           town: string;
           country: string;
           countryCode: string;
+          phone: string;  
           jobTitle: string;
           current: boolean;
           admin: boolean;
+          firstTime: boolean;
+          password?: string;
         } = {
           firstName: doctor.firstName ?? "Unknown",
           lastName: doctor.lastName ?? "Unknown",
@@ -292,25 +327,24 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
           practice: updatedUser.practice,
           doctors: updatedUser.doctors,
           selectedDevices: updatedUser.selectedDevices,
-          emrProvider: updatedUser.emrProvider,
-          address: updatedUser.address,
-          town: updatedUser.town,
-          country: updatedUser.country,
-          countryCode: updatedUser.countryCode,
-          jobTitle: updatedUser.jobTitle,
-          current: updatedUser.current,
-          admin: existingDoctor
-            ? existingDoctor.admin
-            : false,
-          firstTime: false,
+          emrProviders: updatedUser.emrProviders,
+          address: updatedUser.address ?? "",
+          town: updatedUser.town ?? "",
+          country: updatedUser.country ?? "",
+          countryCode: updatedUser.countryCode ?? "",
+          phone: updatedUser.phone ?? "",  
+          jobTitle: updatedUser.jobTitle ?? "",
+          current: true,
+          admin: existingDoctor ? existingDoctor.admin : false,
+          firstTime: existingDoctor ? existingDoctor.firstTime : true,
         };
+        
 
         // ✅ Preserve existing password if doctor exists
         if (existingDoctor?.password) {
           updatedFieldsForDoctor.password = existingDoctor.password;
-        }
-
-        if (!existingDoctor) {
+        } else {
+          // ✅ Create new doctor user with a temporary password
           const { hashedPassword } = await sendEmailWithTempPassword(
             doctor.email,
             doctor.lastName ?? "Unknown",
@@ -346,8 +380,7 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
         firstName: updatedUser.firstName || "",
         lastName: updatedUser.lastName || "",
         jobTitle: updatedUser.jobTitle || "",
-        deviceCompany: updatedUser.deviceCompany || "",
-        emrProvider: updatedUser.emrProvider || "",
+        emrProviders: updatedUser.emrProviders || [],
         current: updatedUser.current,
         admin: updatedUser.admin,
         firstTime: updatedUser.firstTime,
@@ -362,40 +395,50 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
 });
 
 
+
+
+
+
 //update profile
 router.put("/update-profile", async (req: Request, res: Response): Promise<void> => {
   const { id, username, firstName, lastName, jobTitle, address, town, country, phone, practice } = req.body;
 
+  console.log("🛠️ Received update profile request:", req.body);
+
   if (!id) {
+    console.log("❌ Error: No user ID provided.");
     res.status(400).json({ message: "User ID is required." });
     return;
   }
 
   try {
-    // ✅ Fetch user instead of using `findByIdAndUpdate`
+    console.log("🔍 Searching for user with ID:", id);
     let user = await User.findById(id);
 
     if (!user) {
+      console.log("❌ User not found.");
       res.status(404).json({ message: "User not found." });
       return;
     }
 
-    console.log("🔍 Updating profile for user:", user);
+    console.log("🛠️ Found user before update:", user);
 
-    // ✅ Update only profile fields
-    user.username = username || user.username;
-    user.firstName = firstName || user.firstName;
-    user.lastName = lastName || user.lastName;
-    user.jobTitle = jobTitle || user.jobTitle;
-    user.address = address || user.address;
-    user.town = town || user.town;
-    user.country = country || user.country;
-    user.phone = phone || user.phone;
-    user.practice = practice || user.practice;
+    // ✅ Update user fields if provided
+    if (username) { user.username = username; user.markModified("username"); }
+    if (firstName) { user.firstName = firstName; user.markModified("firstName"); }
+    if (lastName) { user.lastName = lastName; user.markModified("lastName"); }
+    if (jobTitle) { user.jobTitle = jobTitle; user.markModified("jobTitle"); }
+    if (address) { user.address = address; user.markModified("address"); }
+    if (town) { user.town = town; user.markModified("town"); }
+    if (country) { user.country = country; user.markModified("country"); }
+    if (phone) { user.phone = phone; user.markModified("phone"); }
+    if (practice) { user.practice = practice; user.markModified("practice"); }
 
-    await user.save(); // 🚀 Save updated user
+    console.log("🚀 Saving user with updated fields:", user);
 
-    console.log("✅ Profile updated successfully:", user);
+    await user.save();
+
+    console.log("✅ User saved successfully:", user);
 
     res.status(200).json({
       message: "Profile updated successfully.",
@@ -419,6 +462,8 @@ router.put("/update-profile", async (req: Request, res: Response): Promise<void>
     res.status(500).json({ message: "Error updating profile.", error: (error as Error).message });
   }
 });
+
+
 
 router.put(
   "/update-subscription",
