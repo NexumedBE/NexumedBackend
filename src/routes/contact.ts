@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // Required for STARTTLS
   auth: {
-    user: "joel.scharlach@nexumed.com", // Use .env for security once railway is sorted
+    user: "joel.scharlach@nexumed.eu", // Use .env for security once railway is sorted
     pass: "JoelNexumed1",
   },
   tls: {
@@ -40,8 +40,8 @@ router.post("/contact", async (req: Request, res: Response): Promise<void>  => {
   }
 
   const mailOptions = {
-    from: `"Contact Form" <joel.scharlach@nexumed.com>`,
-    to: ["joel.scharlach@nexumed.com", "carl.jans@nexumed.eu"],
+    from: `"Contact Form" <joel.scharlach@nexumed.eu>`,
+    to: ["joel.scharlach@nexumed.eu", "carl.jans@nexumed.eu"],
     subject: "New Contact Form Submission",
     text: `
       Name: ${name}
