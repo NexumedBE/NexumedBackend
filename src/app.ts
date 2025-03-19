@@ -70,7 +70,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 //Contact form route
-app.use('/api', contactRoutes);
+app.use('/', contactRoutes);
 
 // Invoice route
 // app.get('/invoice', (req, res) => {
