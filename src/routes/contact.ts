@@ -31,7 +31,7 @@ transporter.verify((error, success) => {
 });
 
 // Contact Form API Route
-router.post("/contact", async (req: Request, res: Response): Promise<void>  => {
+router.post("/", async (req: Request, res: Response): Promise<void>  => {
   const { name, email, telephone, profession, message } = req.body;
 
   if (!name || !email || !message) {
