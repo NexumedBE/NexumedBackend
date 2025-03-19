@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
+    user: "confirmation@nexumed.eu",
     pass: "JoelNexumed1" // Use environment variable
   },
   tls: {
@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
  */
 export const sendThankYouEmail = async (recipientEmail: string): Promise<void> => {
   const mailOptions = {
-    from: `"Nexumed" <${process.env.EMAIL_USER}>`,
+    from: `"Nexumed" <confirmation@nexumed.eu>`,
     to: recipientEmail,
     subject: "Thank You for Your Nexcore Subscription",
     text: `Hello,
@@ -43,6 +43,7 @@ export const sendThankYouEmail = async (recipientEmail: string): Promise<void> =
           <p>Thank you for subscribing to <strong>Nexcore</strong> by <strong>Nexumed</strong>.</p>
           <p><strong>Download the latest version of Nexcore at :</strong> <a href="${DOWNLOAD_LINK}" target="_blank">Click here to download</a></p>
           <p>You will also find instructions in configuring Nexcore with various EMRs and devices.</p>
+          <p>This can be found on the our website.</p>
           <p>If you have any questions, feel free to reach out to our support team.</p>
           <br/>
           <p>Best,</p>
