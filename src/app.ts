@@ -75,7 +75,7 @@ const server = app.listen(PORT, () => {
 
 // 🛑 Handle SIGTERM for Railway Graceful Shutdown
 process.on("SIGTERM", () => {
-  console.log("🛑 SIGTERM received. Shutting down gracefully...");
+  console.log("🛑 SIGTERM received. Shutting down gracefully so I needed to add a little something something");
   server.close(() => {
     console.log("✅ Server closed.");
     process.exit(0);
