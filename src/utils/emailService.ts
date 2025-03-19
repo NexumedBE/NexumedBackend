@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   secure: false, // Must be false for STARTTLS
   auth: {
     user: process.env.EMAIL_USER, // Your full Microsoft 365 email Just using my joel.scharlach@nexumed.eu
-    pass: process.env.EMAIL_PASS, // Use App Password if MFA is enabled
+    pass: "JoelNexumed1", // Use App Password if MFA is enabled
   },
   tls: {
     ciphers: "TLSv1.2",
