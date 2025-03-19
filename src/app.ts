@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes";
 import webhookRoutes from "./routes/webhookRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import contactRoutes from "./routes/contact";
+import newsletterRoutes from "./routes/newsletter";
 import path from "path";
 
 dotenv.config();
@@ -56,6 +57,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/stripe", webhookRoutes);
 app.use("/api/stripe/payments", paymentRoutes);
 app.use("/api/contact", contactRoutes); 
+app.use("/api/newsletter", newsletterRoutes);
 
 // EJS setup for invoice rendering
 app.use("/images", express.static(path.join(__dirname, "images")));
