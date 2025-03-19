@@ -6,6 +6,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import webhookRoutes from './routes/webhookRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import contactRoutes from "./routes/contact";
 import path from 'path';
 
 dotenv.config();
@@ -67,6 +68,9 @@ app.use('/api/stripe/payments', paymentRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+//Contact form route
+app.use('/api', contactRoutes);
 
 // Invoice route
 // app.get('/invoice', (req, res) => {
