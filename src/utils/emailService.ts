@@ -1,8 +1,11 @@
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config();
+
+const IMAGE_PATH = path.join(__dirname, "..", "src", "images", "nexumed.png");
 
 // Configure Nodemailer transporter for Microsoft 365
 const transporter = nodemailer.createTransport({
@@ -10,7 +13,7 @@ const transporter = nodemailer.createTransport({
   port: 587, // Required for Office365
   secure: false, // Must be false for STARTTLS
   auth: {
-    user: process.env.EMAIL_USER, // Your full Microsoft 365 email (e.g., joel.scharlach@nexumed.eu)
+    user: process.env.EMAIL_USER, // Your full Microsoft 365 email Just using my joel.scharlach@nexumed.eu
     pass: process.env.EMAIL_PASS, // Use App Password if MFA is enabled
   },
   tls: {
@@ -20,17 +23,17 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * Generates a random temporary password.
+ * This will generate a random 8 digit password.
  */
 const generateTempPassword = (): string => {
-  return Math.random().toString(36).slice(-8); // 8-character random password
+  return Math.random().toString(36).slice(-8); 
 };
 
 /**
  * Sends an email with a temporary password.
- * @param recipientEmail The recipient's email address.
- * @param doctorName The doctor's name.
- * @param drsId The doctor's ID number.
+ * @param recipientEmail 
+ * @param doctorName 
+ * @param drsId 
  * @returns {Promise<{ tempPassword: string; hashedPassword: string }>} 
  */
 
@@ -41,8 +44,8 @@ export const sendEmailWithTempPassword = async (
   doctorName: string,
   drsId: string
 ) => {
-  const tempPassword = generateTempPassword(); // Generate a temp password
-  const hashedPassword = await bcrypt.hash(tempPassword, 10); // Hash it before saving
+  const tempPassword = generateTempPassword(); 
+  const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
   const mailOptions = {
     from: `"Nexumed" <${process.env.EMAIL_USER}>`, // Sender's email from Microsoft 365. Just using my joel.scharlach@nexumed.eu for now.  
@@ -72,20 +75,20 @@ export const sendEmailWithTempPassword = async (
           <p><strong>Download the Nexumed Application:</strong>  
           <a href="${DOWNLOAD}" target="_blank">Click here to download</a></p>
           <p>Best,<br/><strong>Nexumed Team</strong></p>`,
-    attachments: [
-      {
-        filename: "nexumed.png",
-        path: "C:\\Users\\joels\\OneDrive\\Desktop\\NexumedWebBackend\\src\\images\\nexumed.png", 
-        cid: "nexumedlogo", 
-      },
-    ],
-  };
+      attachments: [
+        {
+          filename: "nexumed.png",
+          path: IMAGE_PATH, 
+          cid: "nexumedlogo",
+        },
+      ],
+    };
   
 
   try {
     await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent to ${recipientEmail}`);
-    return { tempPassword, hashedPassword }; // Return both temp and hashed password
+    return { tempPassword, hashedPassword }; 
   } catch (error: any) {
     console.error("❌ Email sending failed:", error.message || error);
     throw new Error("Failed to send email.");
