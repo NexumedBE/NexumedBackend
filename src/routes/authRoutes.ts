@@ -8,7 +8,6 @@ const router = express.Router();
 
 // Register a new user
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
-  console.log("🚀 Incoming registration request:", req.body);  // ✅ Debugging Line
   
   const {
     username,
@@ -27,17 +26,9 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     admin,
     current,
     doctors = [],
-    emrProviders = [],  // ✅ Correct field
+    emrProviders = [], 
     selectedDevices = [],
   } = req.body;
-
-  // 🚀 Log the parsed values before saving
-  console.log("🛠 Parsed registration data:");
-  console.log("   - Username:", username);
-  console.log("   - Email:", email);
-  console.log("   - Doctors:", doctors);
-  console.log("   - emrProviders:", emrProviders);
-  console.log("   - selectedDevices:", selectedDevices);
 
   try {
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { drsId }] });
@@ -75,8 +66,6 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     });
 
     await newUser.save();
-
-    console.log("✅ User registered successfully:", newUser);
 
     res.status(201).json({
       message: "User registered successfully.",
@@ -133,7 +122,6 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
       }
 
       try {
-        // Fetch full user data excluding the password
         const completeUser = await User.findById(user._id).select("-password");
 
         if (!completeUser) {
@@ -141,7 +129,6 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
           return res.status(404).json({ message: "User not found." });
         }
 
-        // Ensure we return structured EMR and device data
         const userResponse = {
           id: completeUser._id,
           username: completeUser.username,
@@ -163,8 +150,6 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
           selectedDevices: completeUser.selectedDevices || [],
         };
 
-        console.log("User logged in successfully:", userResponse);
-
         res.status(200).json({
           message: "Login successful.",
           user: userResponse,
@@ -181,7 +166,6 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
 
 // Logout logic
 router.post("/logout", (req, res) => {
-  console.log("Logout request received. Session:", req.session);
 
   req.logout((err) => {
     if (err) {
@@ -226,14 +210,13 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
 
     console.log("🔍 Original user before update:", updatedUser);
 
-    // ✅ Dynamically update user fields (excluding `doctors`, `selectedDevices`, and `emrProviders`)
+    //Dynamically update user fields (excluding `doctors`, `selectedDevices`, and `emrProviders`)
     Object.keys(updatedFields).forEach((key) => {
       if (key !== "doctors" && key !== "selectedDevices" && key !== "emrProviders") {
         (updatedUser as any)[key] = updatedFields[key];
       }
     });
 
-    // ✅ Ensure `emrProviders` is properly formatted as an array of objects
     if (Array.isArray(updatedFields.emrProviders)) {
       updatedUser.set(
         "emrProviders",
@@ -256,7 +239,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
       updatedUser.set("emrProviders", []);
     }
 
-    // ✅ Ensure `selectedDevices` is properly formatted
     if (Array.isArray(updatedFields.selectedDevices)) {
       updatedUser.set(
         "selectedDevices",
@@ -270,7 +252,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
       updatedUser.markModified("selectedDevices");
     }
 
-    // ✅ Process doctors: Ensure valid entries and create new user profiles if needed
     if (Array.isArray(updatedFields.doctors)) {
       updatedUser.set(
         "doctors",
@@ -282,7 +263,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
     await updatedUser.save();
     console.log("✅ Updated user saved:", updatedUser);
 
-    // ✅ Process doctor updates separately (Creating new doctor profiles if they don't exist)
     await Promise.all(
       updatedFields.doctors.map(async (doctor: { 
         firstName: string; 
@@ -295,7 +275,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
           return;
         }
 
-        // ✅ Check if doctor already exists
         const existingDoctor = await User.findOne({ email: doctor.email }).select("+password");
 
         let updatedFieldsForDoctor: {
@@ -340,11 +319,9 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
         };
         
 
-        // ✅ Preserve existing password if doctor exists
         if (existingDoctor?.password) {
           updatedFieldsForDoctor.password = existingDoctor.password;
         } else {
-          // ✅ Create new doctor user with a temporary password
           const { hashedPassword } = await sendEmailWithTempPassword(
             doctor.email,
             doctor.lastName ?? "Unknown",
@@ -363,7 +340,6 @@ router.put("/update", async (req: Request, res: Response): Promise<void> => {
 
     console.log("🔵 Sending updated user back to frontend:", updatedUser);
 
-    // ✅ Return updated user
     res.status(200).json({
       message: "Profile updated successfully.",
       user: {
@@ -423,7 +399,6 @@ router.put("/update-profile", async (req: Request, res: Response): Promise<void>
 
     console.log("🛠️ Found user before update:", user);
 
-    // ✅ Update user fields if provided
     if (username) { user.username = username; user.markModified("username"); }
     if (firstName) { user.firstName = firstName; user.markModified("firstName"); }
     if (lastName) { user.lastName = lastName; user.markModified("lastName"); }
@@ -445,8 +420,8 @@ router.put("/update-profile", async (req: Request, res: Response): Promise<void>
       user: {
         id: user._id,
         username: user.username,
-        email: user.email, // Keep email static (read-only)
-        drsId: user.drsId, // Keep Drs ID static (read-only)
+        email: user.email, //this is reaad only
+        drsId: user.drsId, //this is reaad only
         jobTitle: user.jobTitle || "",
         firstName: user.firstName || "",
         lastName: user.lastName || "",

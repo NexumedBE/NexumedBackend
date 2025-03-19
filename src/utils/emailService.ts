@@ -34,7 +34,7 @@ const generateTempPassword = (): string => {
  * @returns {Promise<{ tempPassword: string; hashedPassword: string }>} 
  */
 
-const DOWNLOAD = "https://netorgft12042682.sharepoint.com/:u:/s/Nexumed/EQmI9e3CzUVApxvzUC3pVbwBIr4gINCiWmhQT6xri8TRbQ?e=WCRv7N";
+const DOWNLOAD = "https://netorgft12042682.sharepoint.com/:u:/s/Nexumed/ESRm942RYnNLqWkbqnQ_NzUBtIZFMH7uuVJtN-4oFEAGuA?e=yTQHqD";
 
 export const sendEmailWithTempPassword = async (
   recipientEmail: string,

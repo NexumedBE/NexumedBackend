@@ -33,15 +33,6 @@ app.use(cors({
 }));
 
 
-
-// app.use(
-//   cors({
-//     origin: process.env.FRONTEND_URL || "http://localhost:3000", 
-//     credentials: true,  
-//   })
-// );
-
-// Session configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'your_secure_secret_key',
@@ -49,18 +40,18 @@ app.use(
     saveUninitialized: false,  
     cookie: {
       httpOnly: true,  
-      secure: process.env.NODE_ENV === "production",  // this is to make sure that in production only https is used
+      secure: process.env.NODE_ENV === "production", 
       sameSite: "lax", 
     },
   })
 );
 
 // Logging session info for debugging
-app.use((req, res, next) => {
-  console.log('Session data:', req.session);
-  console.log('Session ID:', req.sessionID);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Session data:', req.session);
+//   console.log('Session ID:', req.sessionID);
+//   next();
+// });
 
 // Initialize Passport for authentication
 app.use(passport.initialize());
