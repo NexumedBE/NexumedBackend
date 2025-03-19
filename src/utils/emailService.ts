@@ -45,7 +45,9 @@ export const sendEmailWithTempPassword = async (
   const hashedPassword = await bcrypt.hash(tempPassword, 10); // Hash it before saving
 
   const mailOptions = {
-    from: `"Nexumed" <${process.env.EMAIL_USER}>`, // Sender's email from Microsoft 365
+    from: `"Nexumed" <${process.env.EMAIL_USER}>`, // Sender's email from Microsoft 365. Just using my joel.scharlach@nexumed.eu for now.  
+                                                  // Can be changed, but needs to be chanaged in the .env and the host for the BE
+                                                  // at current production time can be found at https://railway.com
     to: recipientEmail,
     subject: "Your Nexumed Account - Temporary Password",
     text: `Hello Dr. ${doctorName},
@@ -58,6 +60,7 @@ export const sendEmailWithTempPassword = async (
     Nexumed Team`,
     html: `<p>Hello Dr. <strong>${doctorName}</strong>,</p>
           <p>You have been added to <strong>Nexcore</strong> by <strong>Nexumed</strong>.</p>
+          <p><img src="cid:nexumedlogo" alt="Nexumed Logo" width="200"/></p> <!-- Logo added here -->
           <p><strong>Doctor ID:</strong> ${drsId}</p>
           <p><strong>Temporary Password:</strong> ${tempPassword}</p>
           <p>For security reasons, please change your password after logging in.</p>
@@ -65,11 +68,19 @@ export const sendEmailWithTempPassword = async (
           <a href="https://www.nexumed.eu" target="_blank">www.nexumed.eu</a></p>
           <br/>
           <p>For your version of the software application, you can use the same username and your newly 
-           create password that you will use to login into the website</p>
+           created password that you will use to log in to the website.</p>
           <p><strong>Download the Nexumed Application:</strong>  
           <a href="${DOWNLOAD}" target="_blank">Click here to download</a></p>
           <p>Best,<br/><strong>Nexumed Team</strong></p>`,
+    attachments: [
+      {
+        filename: "nexumed.png",
+        path: "C:\\Users\\joels\\OneDrive\\Desktop\\NexumedWebBackend\\src\\images\\nexumed.png", 
+        cid: "nexumedlogo", 
+      },
+    ],
   };
+  
 
   try {
     await transporter.sendMail(mailOptions);
