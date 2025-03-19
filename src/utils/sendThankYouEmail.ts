@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "confirmation@nexumed.eu",
+    user: "joel.scharlach@nexumed.eu",
     pass: "JoelNexumed1" // Use environment variable
   },
   tls: {
@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
  */
 export const sendThankYouEmail = async (recipientEmail: string): Promise<void> => {
   const mailOptions = {
-    from: `"Nexumed" <confirmation@nexumed.eu>`,
+    from: `"Nexumed" <joel.scharlach@nexumed.eu>`,
     to: recipientEmail,
     subject: "Thank You for Your Nexcore Subscription",
     text: `Hello,
