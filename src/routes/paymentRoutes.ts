@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
+import { sendThankYouEmail } from "../utils/sendThankYouEmail";
 // import { generateInvoice } from "../services/invoiceService";
 
 dotenv.config();
@@ -66,7 +67,7 @@ router.post(
       res.status(400).json({ error: "Email and payment details are required" });
       return;
     }
-
+    await sendThankYouEmail(email);
     try {
       console.log(`ℹ️ Generating invoice for ${email}...`);
       // await generateInvoice( deviceCount, price, packageName, email, paymentDetails);
