@@ -35,6 +35,7 @@ const generateTempPassword = (): string => {
  */
 
 const DOWNLOAD = "https://netorgft12042682.sharepoint.com/:u:/s/Nexumed/ESRm942RYnNLqWkbqnQ_NzUBtIZFMH7uuVJtN-4oFEAGuA?e=yTQHqD";
+const PDF_LINK = "https://nexumed-frontend.vercel.app/thirdPartyConfig";
 
 export const sendEmailWithTempPassword = async (
   recipientEmail: string,
@@ -68,6 +69,7 @@ export const sendEmailWithTempPassword = async (
            create password that you will use to login into the website</p>
           <p><strong>Download the Nexumed Application:</strong>  
           <a href="${DOWNLOAD}" target="_blank">Click here to download</a></p>
+          <p>You will also find this link,  <a href="${PDF_LINK}" target="_blank">Configuration</a> to our website that will assist your EMR and device configuration.</p>
           <p>Best,<br/><strong>Nexumed Team</strong></p>`,
   };
 

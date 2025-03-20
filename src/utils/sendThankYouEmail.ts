@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const DOWNLOAD_LINK = "https://netorgft12042682.sharepoint.com/:u:/s/Nexumed/ESRm942RYnNLqWkbqnQ_NzUBtIZFMH7uuVJtN-4oFEAGuA?e=yTQHqD";
+const PDF_LINK = "https://nexumed-frontend.vercel.app/thirdPartyConfig";
+
 
 const transporter = nodemailer.createTransport({
   host: "smtp.office365.com",
@@ -35,6 +37,8 @@ export const sendThankYouEmail = async (recipientEmail: string): Promise<void> =
             To get started, you can download the Nexumed application using the link below:
             Download Nexumed: ${DOWNLOAD_LINK}
 
+            You will also find this link, ${PDF_LINK} to our website that will assist your EMR and device configuration.
+
             If you have any questions, feel free to reach out to our support team.
 
             Best,
@@ -42,8 +46,7 @@ export const sendThankYouEmail = async (recipientEmail: string): Promise<void> =
     html: `<p>Hello,</p>
           <p>Thank you for subscribing to <strong>Nexcore</strong> by <strong>Nexumed</strong>.</p>
           <p><strong>Download the latest version of Nexcore at :</strong> <a href="${DOWNLOAD_LINK}" target="_blank">Click here to download</a></p>
-          <p>You will also find instructions in configuring Nexcore with various EMRs and devices.</p>
-          <p>This can be found on the our website.</p>
+          <p>You will also find this link,  <a href="${PDF_LINK}" target="_blank">Configuration</a> to our website that will assist your EMR and device configuration.</p>
           <p>If you have any questions, feel free to reach out to our support team.</p>
           <br/>
           <p>Best,</p>
