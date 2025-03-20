@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 const allowedOrigins = [
   "http://localhost:3000",
   "https://nexumed-frontend.vercel.app",
+  "https://www.nexumed.eu"
 ];
 
 app.use(

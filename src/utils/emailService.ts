@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
   port: 587, // Required for Office365
   secure: false, // Must be false for STARTTLS
   auth: {
-    user: "joel.scharlach@nexumed.eu", // Your full Microsoft 365 email (e.g., joel.scharlach@nexumed.eu)
-    pass: "JoelNexumed1", // Use App Password if MFA is enabled
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS, 
   },
   tls: {
     ciphers: "TLSv1.2",
@@ -46,7 +46,7 @@ export const sendEmailWithTempPassword = async (
   const hashedPassword = await bcrypt.hash(tempPassword, 10); // Hash it before saving
 
   const mailOptions = {
-    from: `"Nexumed" <joel.scharlach@nexumed.eu>`, // Sender's email from Microsoft 365
+    from: `"Nexumed" <${process.env.EMAIL_USER}>`, // Sender's email from Microsoft 365
     to: recipientEmail,
     subject: "Your Nexumed Account - Temporary Password",
     text: `Hello Dr. ${doctorName},
