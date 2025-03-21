@@ -18,6 +18,34 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 });
 
 router.post(
+  "/create-payment-intent",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { amount, currency, email } = req.body;
+
+      if (!amount || !currency || !email) {
+        res.status(400).json({ error: "Amount, currency, and email are required" });
+        return;
+      }
+
+      console.log("🟢 Creating payment intent with:", { amount, currency });
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,  
+        currency,
+      });
+
+      console.log("✅ Payment intent created:", paymentIntent.id);
+
+      res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+      next(error);  
+    }
+  }
+);
+
+
+router.post(
   "/create-subscription",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
