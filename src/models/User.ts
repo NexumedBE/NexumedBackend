@@ -38,6 +38,8 @@ export interface IUser extends Document {
     deviceId: string; 
     format: string;  
   }[];
+  stripeCustomerId?: string;
+  subscriptionId?: string;
 }
 
 const UserSchema = new mongoose.Schema({
@@ -91,6 +93,8 @@ const UserSchema = new mongoose.Schema({
     ],
     default: [],
   },
+  stripeCustomerId: { type: String, default: "" },
+  subscriptionId: { type: String, default: "" },
 });
 
 UserSchema.pre("save", async function (next) {

@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import { sendThankYouEmail } from "../utils/sendThankYouEmail";
+import User from "../models/User";
 // import { generateInvoice } from "../services/invoiceService";
 
 dotenv.config();
@@ -16,9 +17,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-12-18.acacia",
 });
 
-// Route to create a payment intent
 router.post(
-  "/create-payment-intent",
+  "/create-subscription",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { amount, currency, email } = req.body;
@@ -28,21 +28,72 @@ router.post(
         return;
       }
 
-      console.log("🟢 Creating payment intent with:", { amount, currency });
+      //Create or find customer
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      const customer = customers.data.length
+        ? customers.data[0]
+        : await stripe.customers.create({ email });
 
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount,  
-        currency,
+      //Create subscription with dynamic price
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [
+          {
+            price_data: {
+              unit_amount: amount,
+              currency,
+              recurring: { interval: "month" },
+              product: process.env.STRIPE_PRODUCT_ID!,
+            },
+          },
+        ],
+        payment_behavior: "default_incomplete",
+        expand: ["latest_invoice.payment_intent"],
       });
 
-      console.log("✅ Payment intent created:", paymentIntent.id);
+      //Safely extract client secret
+      let clientSecret: string | null = null;
 
-      res.status(200).json({ clientSecret: paymentIntent.client_secret });
+      const latestInvoice = subscription.latest_invoice;
+      if (
+        latestInvoice !== null &&
+        typeof latestInvoice !== "string" &&
+        latestInvoice.payment_intent
+      ) {
+        const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+        clientSecret = paymentIntent.client_secret;
+      }
+
+      if (!clientSecret) {
+        throw new Error("Could not retrieve client secret from subscription.");
+      }
+
+      //Update MongoDB user
+      const updatedUser = await User.findOneAndUpdate(
+        { email },
+        {
+          stripeCustomerId: customer.id,
+          subscriptionId: subscription.id,
+        },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        console.warn(`⚠️ No user found in DB for email: ${email}`);
+      }
+
+      //Return clientSecret
+      res.status(200).json({
+        clientSecret,
+        subscriptionId: subscription.id,
+      });
     } catch (error) {
-      next(error);  
+      console.error("❌ Error creating subscription:", error);
+      next(error);
     }
   }
 );
+
 
 interface PaymentSuccessBody {
   deviceCount: string;
@@ -89,3 +140,31 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 export default router;
+
+
+// router.post(
+//   "/create-payment-intent",
+//   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+//     try {
+//       const { amount, currency, email } = req.body;
+
+//       if (!amount || !currency || !email) {
+//         res.status(400).json({ error: "Amount, currency, and email are required" });
+//         return;
+//       }
+
+//       console.log("🟢 Creating payment intent with:", { amount, currency });
+
+//       const paymentIntent = await stripe.paymentIntents.create({
+//         amount,  
+//         currency,
+//       });
+
+//       console.log("✅ Payment intent created:", paymentIntent.id);
+
+//       res.status(200).json({ clientSecret: paymentIntent.client_secret });
+//     } catch (error) {
+//       next(error);  
+//     }
+//   }
+// );
