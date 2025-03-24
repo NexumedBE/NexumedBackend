@@ -71,7 +71,8 @@ router.post(
               unit_amount: amount,
               currency,
               recurring: { interval: "month" },
-              product: process.env.STRIPE_PRODUCT_ID!,
+              // product: process.env.STRIPE_PRODUCT_ID!,
+              product: "prod_Rz40I2tqG02ITV",
             },
           },
         ],
@@ -196,3 +197,4 @@ export default router;
 //     }
 //   }
 // );
+
